@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>새벽금속 | 견적 한 장</title>
+  <meta name="description" content="판금 주문 생산 새벽금속. 품목과 수량을 고르면 견적 금액과 납기가 바로 나오고, 견적서를 인쇄하거나 링크로 보낼 수 있어요.">
+  <!-- 견적 페이지는 검색에 나오지 않게 -->
+  <meta name="robots" content="noindex">
+
+  <!-- 링크 미리보기(카카오톡, 슬랙 등): 미리보기는 data.js를 읽지 못해서 여기에 직접 적어요.
+       회사를 바꾸면 아래 세 줄(title, description, image)도 함께 바꿔 주세요.
+       배포한 뒤에는 og:image를 https://내주소/og.png 처럼 전체 주소로 바꾸면 미리보기가 확실해요 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="새벽금속 견적 한 장">
+  <meta property="og:description" content="품목과 수량을 고르면 견적이 바로 나와요">
+  <meta property="og:image" content="og.png">
+  <meta property="og:url" content="">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#F5F7FA">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="in">
+      <p class="brand"><span class="logo" id="logo" aria-hidden="true">새</span><span id="company">회사 이름</span></p>
+      <p class="tag">견적 한 장</p>
+    </div>
+  </header>
+
+  <div class="received" id="received" hidden>
+    <div class="in">
+      <p><b>받은 견적이에요.</b> 고쳐도 보낸 사람의 견적은 바뀌지 않아요.</p>
+      <button class="link" id="restart">새로 고르기</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="pick" aria-labelledby="pick-h">
+      <h1 id="pick-h">품목과 수량을 고르면<br class="m-only"> 견적이 바로 나와요</h1>
+      <p class="lead" id="line"></p>
+
+      <h2 class="step"><span>1</span>품목</h2>
+      <div class="items" id="items" role="radiogroup" aria-label="품목"></div>
+
+      <div class="opts" id="opts" aria-live="polite">
+        <h2 class="step"><span>2</span><span id="opt-title">옵션</span></h2>
+        <div class="opt"><p class="opt-k" id="mat-k">재질</p><div class="seg" id="mats" role="radiogroup" aria-labelledby="mat-k"></div></div>
+        <div class="opt"><p class="opt-k" id="fin-k">표면 처리</p><div class="seg" id="fins" role="radiogroup" aria-labelledby="fin-k"></div></div>
+        <div class="opt">
+          <label class="opt-k" for="qty">수량</label>
+          <div class="qty">
+            <button class="qbtn" id="minus" aria-label="수량 줄이기">−</button>
+            <input id="qty" type="number" inputmode="numeric" min="1" step="1">
+            <span class="unit" id="unit">개</span>
+            <button class="qbtn" id="plus" aria-label="수량 늘리기">+</button>
+          </div>
+          <p class="hint" id="tier-hint"></p>
+        </div>
+        <div class="opt"><p class="opt-k" id="rush-k">납기</p><div class="seg" id="rush" role="radiogroup" aria-labelledby="rush-k"></div></div>
+
+        <div class="preview">
+          <div><p class="pk">개당</p><p class="pv" id="pv-unit">0원</p></div>
+          <div><p class="pk">이 줄 금액</p><p class="pv" id="pv-line">0원</p></div>
+          <div><p class="pk">납기</p><p class="pv" id="pv-lead">0영업일</p></div>
+        </div>
+        <p class="warn" id="warn" hidden></p>
+        <button class="btn main" id="add">견적에 담기</button>
+      </div>
+    </section>
+
+    <aside class="cart" aria-labelledby="cart-h">
+      <div class="cart-in">
+        <h2 id="cart-h">담은 견적 <span class="count" id="count">0</span></h2>
+        <p class="empty" id="empty">품목을 골라 담으면 여기에 쌓여요.</p>
+        <ul class="lines" id="lines"></ul>
+        <dl class="sum">
+          <div><dt>공급가액</dt><dd id="s-sub">0원</dd></div>
+          <div><dt>부가세 (10%)</dt><dd id="s-vat">0원</dd></div>
+          <div class="total"><dt>합계</dt><dd id="s-total">0원</dd></div>
+          <div><dt>예상 출고</dt><dd id="s-ship">-</dd></div>
+        </dl>
+        <button class="btn main" id="open-sheet" disabled>견적서 보기</button>
+        <p class="fine">자동 계산한 참고 견적이에요. 정식 견적은 도면 확인 뒤 드려요.</p>
+      </div>
+    </aside>
+  </main>
+
+  <div class="bar" id="bar" hidden>
+    <p><span>합계</span><b id="bar-total">0원</b></p>
+    <button class="btn main" id="bar-open">견적서 보기</button>
+  </div>
+
+  <!-- 견적서: 인쇄하면 이 칸만 나와요 -->
+  <section class="sheet-wrap" id="sheet-wrap" hidden aria-labelledby="sheet-h">
+    <div class="sheet-tools">
+      <button class="btn" id="close-sheet">← 돌아가기</button>
+      <div class="tools-r">
+        <button class="btn" id="copy">링크 복사</button>
+        <button class="btn" id="share" hidden>보내기</button>
+        <button class="btn main" id="print">인쇄, PDF 저장</button>
+      </div>
+    </div>
+    <p class="toast" id="toast" role="status" aria-live="polite"></p>
+    <article class="sheet" id="sheet">
+      <header class="sh-top">
+        <h2 id="sheet-h">견 적 서</h2>
+        <div class="sh-meta"><p>견적번호 <b id="q-no"></b></p><p>견적일 <b id="q-date"></b></p><p>유효 기간 <b id="q-valid"></b></p></div>
+      </header>
+      <div class="sh-parties">
+        <div class="party">
+          <p class="pk">받는 곳</p>
+          <label class="to-label" for="to">회사 이름 (선택, 이 화면과 인쇄에만 남아요)</label>
+          <input id="to" type="text" maxlength="40" placeholder="예: ○○산업 구매팀" autocomplete="organization">
+          <p class="to-print" id="to-print"></p>
+          <p class="greet">아래와 같이 견적합니다.</p>
+        </div>
+        <div class="party">
+          <p class="pk">공급자</p>
+          <p class="co" id="sh-co"></p>
+          <p id="sh-biz"></p><p id="sh-addr"></p><p id="sh-mail"></p>
+        </div>
+      </div>
+      <p class="sh-total">합계 금액 <b id="sh-total"></b> <span>(부가세 포함)</span></p>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th scope="col">품목</th><th scope="col">사양</th><th scope="col" class="num">수량</th><th scope="col" class="num">단가</th><th scope="col" class="num">금액</th></tr></thead>
+          <tbody id="sh-rows"></tbody>
+          <tfoot>
+            <tr><th scope="row" colspan="4">공급가액</th><td class="num" id="sh-sub"></td></tr>
+            <tr><th scope="row" colspan="4">부가세 (10%)</th><td class="num" id="sh-vat"></td></tr>
+            <tr class="t"><th scope="row" colspan="4">합계</th><td class="num" id="sh-sum"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="sh-ship">예상 출고 <b id="sh-ship"></b></p>
+      <ul class="sh-notes" id="sh-notes"></ul>
+    </article>
+  </section>
+
+  <footer class="foot"><div class="in"><p>예시 회사와 단가는 가상이에요. 금액은 자동 계산한 참고 견적이에요.</p></div></footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
